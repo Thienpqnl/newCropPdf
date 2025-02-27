@@ -1,25 +1,27 @@
-import 'dart:typed_data';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flnewpr/Controller/ImageStorageService.dart';
 
 class SavedImagesScreen extends StatefulWidget {
-  final ImageStorageService imageStorageService; // Nhận từ CameraScreen
+  final ImageStorageService imageStorageService;
   const SavedImagesScreen({super.key, required this.imageStorageService});
 
   @override
-  // ignore: library_private_types_in_public_api
   _SavedImagesScreenState createState() => _SavedImagesScreenState();
 }
 
 class _SavedImagesScreenState extends State<SavedImagesScreen> {
-  late ImageStorageService _imageStorageService;
+  late List<String> _savedImages;
 
   @override
   void initState() {
     super.initState();
-    _imageStorageService =
-        widget.imageStorageService; // Lấy từ tham số truyền vào
-    setState(() {}); // Cập nhật UI sau khi nhận dữ liệu
+    _loadImages();
+  }
+
+  Future<void> _loadImages() async {
+    _savedImages = await widget.imageStorageService.getSavedImages();
+    setState(() {});
   }
 
   @override
@@ -31,19 +33,17 @@ class _SavedImagesScreenState extends State<SavedImagesScreen> {
   }
 
   Widget _buildImageGallery() {
-    print('Số lượng ảnh: ${_imageStorageService.savedImages.length}');
     return ListView.builder(
-      itemCount: _imageStorageService.savedImages.length,
+      itemCount: _savedImages.length,
       itemBuilder: (context, index) {
-        Uint8List imageBytes = _imageStorageService
-            .getImageBytes(_imageStorageService.savedImages[index]);
-
+        String imagePath = _savedImages[index];
+        if (!File(imagePath).existsSync()) {
+          return SizedBox();
+        }
         return ListTile(
           leading: GestureDetector(
-            onTap: () {
-              _showImageDialog(context, imageBytes); // Gọi dialog xem ảnh
-            },
-            child: Image.memory(imageBytes,
+            onTap: () => _showImageDialog(context, imagePath),
+            child: Image.file(File(imagePath),
                 width: 50, height: 50, fit: BoxFit.cover),
           ),
           title: Text('Ảnh ${index + 1}'),
@@ -52,8 +52,7 @@ class _SavedImagesScreenState extends State<SavedImagesScreen> {
     );
   }
 
-  /// Hiển thị ảnh lớn hơn khi nhấn vào
-  void _showImageDialog(BuildContext context, Uint8List imageBytes) {
+  void _showImageDialog(BuildContext context, String imagePath) {
     showDialog(
       context: context,
       builder: (context) {
@@ -63,7 +62,7 @@ class _SavedImagesScreenState extends State<SavedImagesScreen> {
             children: [
               Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: Image.memory(imageBytes, fit: BoxFit.contain),
+                child: Image.file(File(imagePath), fit: BoxFit.contain),
               ),
               TextButton(
                 onPressed: () => Navigator.pop(context),
