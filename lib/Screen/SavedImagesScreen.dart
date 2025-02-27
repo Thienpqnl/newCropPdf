@@ -7,6 +7,7 @@ class SavedImagesScreen extends StatefulWidget {
   const SavedImagesScreen({super.key, required this.imageStorageService});
 
   @override
+  // ignore: library_private_types_in_public_api
   _SavedImagesScreenState createState() => _SavedImagesScreenState();
 }
 
@@ -33,6 +34,7 @@ class _SavedImagesScreenState extends State<SavedImagesScreen> {
   }
 
   Widget _buildImageGallery() {
+    print('ảnh đã lưu ${_savedImages.length}');
     return ListView.builder(
       itemCount: _savedImages.length,
       itemBuilder: (context, index) {

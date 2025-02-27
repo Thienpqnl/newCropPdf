@@ -12,10 +12,6 @@ class ImageStorageService {
     savedImages.add(file.path);
   }
 
-  Uint8List getImageData(String path) {
-    return savedImagesMap[path] ?? Uint8List(0);
-  }
-
   Future<List<String>> getSavedImages() async {
     return savedImages;
   }

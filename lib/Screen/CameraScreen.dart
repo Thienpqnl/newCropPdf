@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flnewpr/Controller/CameraControllerService.dart'
@@ -5,11 +6,13 @@ import 'package:flnewpr/Controller/CameraControllerService.dart'
 import 'package:flnewpr/Controller/ImageStorageService.dart' as storage_service;
 import 'package:flnewpr/Screen/SavedImagesScreen.dart';
 import 'package:camera/camera.dart';
+import 'package:path_provider/path_provider.dart';
 
 class CameraScreen extends StatefulWidget {
   const CameraScreen({super.key});
 
   @override
+  // ignore: library_private_types_in_public_api
   _CameraScreenState createState() => _CameraScreenState();
 }
 
@@ -34,10 +37,23 @@ class _CameraScreenState extends State<CameraScreen> {
   }
 
   Future<void> _captureImage() async {
+    print('chup anh');
     final image = await _cameraService.captureImage();
     if (image != null) {
+      final directory = await getApplicationDocumentsDirectory();
+      final folderPath = '${directory.path}/app_flutter';
+
       Uint8List imageBytes = await image.readAsBytes();
-      String filename = "image_${DateTime.now().millisecondsSinceEpoch}.png";
+      String filename =
+          "$folderPath/image_${DateTime.now().millisecondsSinceEpoch}.png";
+
+      // Tạo thư mục nếu nó chưa tồn tại
+      final folder = Directory(folderPath);
+      if (!folder.existsSync()) {
+        folder.createSync(
+            recursive: true); // Tạo thư mục và tất cả các thư mục cha nếu cần
+      }
+
       await _imageStorageService.saveImage(imageBytes, filename);
       _showSnackBar('📸 Ảnh đã được chụp và lưu vào thư viện');
       setState(() {});
@@ -47,8 +63,19 @@ class _CameraScreenState extends State<CameraScreen> {
   Future<void> _pickImageFromGallery() async {
     final image = await _cameraService.pickImageFromGallery();
     if (image != null) {
+      final directory = await getApplicationDocumentsDirectory();
+      final folderPath = '${directory.path}/app_flutter';
       Uint8List imageBytes = await image.readAsBytes();
-      String filename = "image_${DateTime.now().millisecondsSinceEpoch}.png";
+      String filename =
+          "$folderPath/image_${DateTime.now().millisecondsSinceEpoch}.png";
+
+      // Tạo thư mục nếu nó chưa tồn tại
+      final folder = Directory(folderPath);
+      if (!folder.existsSync()) {
+        folder.createSync(
+            recursive: true); // Tạo thư mục và tất cả các thư mục cha nếu cần
+      }
+
       await _imageStorageService.saveImage(imageBytes, filename);
       _showSnackBar('🖼 Ảnh đã được thêm từ thư viện!');
       setState(() {});
@@ -96,7 +123,11 @@ class _CameraScreenState extends State<CameraScreen> {
         children: [
           Expanded(
             child: _isCameraInitialized
-                ? CameraPreview(_cameraService.cameraController!)
+                ? AspectRatio(
+                    aspectRatio:
+                        _cameraService.cameraController!.value.aspectRatio,
+                    child: CameraPreview(_cameraService.cameraController!),
+                  )
                 : Center(child: Text('Không có camera khả dụng')),
           ),
           ElevatedButton(onPressed: _captureImage, child: Text('📸 Chụp ảnh')),
