@@ -36,10 +36,12 @@ dependencies:
   cupertino_icons: ^1.0.8
   image_picker: ^1.0.7
   permission_handler: ^11.3.1
+  flutter_image_gallery_saver: ^0.0.2
   path_provider: ^2.1.0
   camera: ^0.11.1
   camera_web: ^0.3.5
   shared_preferences: ^2.5.2
+  
 dev_dependencies:
   flutter_test:
     sdk: flutter

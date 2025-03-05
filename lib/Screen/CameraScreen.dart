@@ -7,6 +7,8 @@ import 'package:flnewpr/Controller/ImageStorageService.dart' as storage_service;
 import 'package:flnewpr/Screen/SavedImagesScreen.dart';
 import 'package:camera/camera.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:flutter_image_gallery_saver/flutter_image_gallery_saver.dart';
 
 class CameraScreen extends StatefulWidget {
   const CameraScreen({super.key});
@@ -55,7 +57,17 @@ class _CameraScreenState extends State<CameraScreen> {
       }
 
       await _imageStorageService.saveImage(imageBytes, filename);
-      _showSnackBar('📸 Ảnh đã được chụp và lưu vào thư viện');
+
+      // 📌 Cấp quyền trước khi lưu
+      var status = await Permission.storage.request();
+
+      if (status.isGranted) {
+        // 📌 Lưu ảnh vào bộ sưu tập
+        await FlutterImageGallerySaver.saveImage(imageBytes);
+        _showSnackBar('📸 Ảnh đã lưu vào bộ sưu tập');
+      } else {
+        _showSnackBar('❌ Không có quyền lưu ảnh vào bộ sưu tập');
+      }
       setState(() {});
     }
   }
